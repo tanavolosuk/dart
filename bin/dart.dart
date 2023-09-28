@@ -1,5 +1,7 @@
-import 'package:dart/dart.dart' as dart;
-import 'package:dio/dio.dart';
+// import 'package:dart/dart.dart' as dart;
+// import 'package:dio/dio.dart';
+import 'dart:convert' as convert;
+import 'package:http/http.dart' as http;
 
 void main(List<String> arguments) async {
 //(пример с массивом студентов) когда мы отправляем какой-то запрос,
@@ -36,21 +38,38 @@ void main(List<String> arguments) async {
   //Future.value - явно передаем значение 4, мы выводим как сам тип обещания
   //await - ждем пока функция вернет значение
 
-  print('h1');
-  await rsp(10);
-  print('h2');
-}
+  //String url = 'https://dummyjson.com/products';
+  // Dio client = Dio();
+  // var response = await client.get(url);
+  // Map<String, dynamic> data = response.data;
+  // print(data);
 
-Future<int> slp(int num) {
-  if (num % 2 == 0) {
-    return Future.value(num * 2);
-  } else {
-    return Future.error(Exception('очень непридвиденная ошибка'));
-    //тип исключения, получающий в себя сообщения.
+  final url = Uri.https(
+    'dummyjson.com',
+    '/products',
+  );
+  final response = await http.get(url);
+
+  if (response.statusCode != 200) {
+    print('Error');
+    return;
   }
-  //value - значение
-}
 
-Future<void> rsp(int num) {
-  return Future.delayed(Duration(seconds: num)); //void - пустой тип
+  Map<String, dynamic> jsonData = convert.jsonDecode(response.body);
+  //map(ключ, значение) функция которая не мутирует массив а возвращает итератор(новый массив)
+
+  List<dynamic> products = jsonData["products"];
+
+  int sum = 0;
+
+  List<int> prices = products
+      .map((p) => p["price"] as int)
+      .toList(); // toList() - приведение массива
+
+  //forEach берет и перебирает каждый элемент массива и что-то с ним делает.
+  //Мы передаем в него функцию - что мы сделаем с этим элементом массива
+
+  sum = prices.reduce((acc, p) => acc + p);
+  double average = sum / products.length;
+  print("average price: $average");
 }
